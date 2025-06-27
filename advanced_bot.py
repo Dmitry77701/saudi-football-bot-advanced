@@ -576,7 +576,7 @@ def main():
     print("   • Максимально частые обновления")
     
     # Запуск бота
-    asyncio.run(bot.run_bot())
+    bot.run_bot()
 
 if __name__ == "__main__":
     main()
