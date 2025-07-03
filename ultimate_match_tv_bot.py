@@ -21,7 +21,7 @@ from telegram.ext import (
     MessageHandler,
     filters,
     ContextTypes
-)
+ )
 
 # Импортируем наши модули
 from advanced_content_generator import AdvancedContentGenerator
@@ -45,18 +45,9 @@ class UltimateMatchTVBot:
     
     def __init__(self):
         # Конфигурация
-        self.bot_token = "7541467929:AAGLOxsVGckECmb-RJX9xIxiaFXuzDcOHbNQ"
+        self.bot_token = "7541467929:AAGLOxsVGckECmbRJX9xIxiaFXuzDcOHbNQ"
         self.channel_id = "-1002643651612"
         self.db_path = 'ultimate_match_tv_bot.db'
-        
-        # Инициализация компонентов
-        self.content_generator = AdvancedContentGenerator(self.db_path)
-        self.interactive_handler = InteractiveHandler(self.db_path)
-        self.db_manager = DatabaseManager(self.db_path)
-        # Создаем логгер для ErrorHandler
-import logging
-logger = logging.getLogger(__name__)
-self.error_handler = ErrorHandler(logger)
         
         # Настройка логирования
         logging.basicConfig(
@@ -64,6 +55,12 @@ self.error_handler = ErrorHandler(logger)
             level=logging.INFO
         )
         self.logger = logging.getLogger(__name__)
+
+        # Инициализация компонентов
+        self.content_generator = AdvancedContentGenerator(self.db_path)
+        self.interactive_handler = InteractiveHandler(self.db_path)
+        self.db_manager = DatabaseManager(self.db_path)
+        self.error_handler = ErrorHandler(self.logger)
         
         # Создание приложения
         self.app = Application.builder().token(self.bot_token).build()
@@ -111,8 +108,7 @@ self.error_handler = ErrorHandler(logger)
         self.app.add_handler(CallbackQueryHandler(self.handle_fixtures, pattern="^fixtures$"))
         
         # Обработчик ошибок
-        self.app.add_error_handler(self.error_handler.handle_error)
-
+        self.app.add_error_handler(self.error_handler.handle_telegram_error)
     async def handle_bot_stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка команды статистики бота"""
         uptime = datetime.now() - self.stats['start_time']
@@ -321,8 +317,7 @@ self.error_handler = ErrorHandler(logger)
             return None
 
     def _generate_text_table(self) -> str:
-        """Генерация текстовой версии турнирной таблицы"""
-        return """
+        """
 1. Аль-Хиляль    | 25 | 65 очков
 2. Аль-Насср     | 25 | 60 очков  
 3. Аль-Ахли      | 25 | 55 очков
@@ -585,13 +580,12 @@ self.error_handler = ErrorHandler(logger)
         )
         
         # Еженедельная таблица в понедельник в 10:00
-        job_queue.run_weekly(
+        job_queue.run_daily(
             lambda context: asyncio.create_task(self.send_weekly_table()),
-            when=datetime.strptime("10:00", "%H:%M").time(),
-            day=0,  # Понедельник
+            time=datetime.strptime("10:00", "%H:%M").time(),
+            days=(0,),  # Понедельник (0=Sunday, 1=Monday, ..., 6=Saturday)
             name="weekly_table"
-        )
-        
+        )        
         self.logger.info("✅ Запланированные задачи настроены")
 
     async def run_bot(self):
@@ -645,8 +639,7 @@ self.error_handler = ErrorHandler(logger)
 def main():
     """Главная функция"""
     bot = UltimateMatchTVBot()
-    bot.run_bot()
+    bot.app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
-
