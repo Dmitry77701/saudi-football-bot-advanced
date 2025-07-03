@@ -53,7 +53,10 @@ class UltimateMatchTVBot:
         self.content_generator = AdvancedContentGenerator(self.db_path)
         self.interactive_handler = InteractiveHandler(self.db_path)
         self.db_manager = DatabaseManager(self.db_path)
-        self.error_handler = ErrorHandler()
+        # Создаем логгер для ErrorHandler
+import logging
+logger = logging.getLogger(__name__)
+self.error_handler = ErrorHandler(logger)
         
         # Настройка логирования
         logging.basicConfig(
