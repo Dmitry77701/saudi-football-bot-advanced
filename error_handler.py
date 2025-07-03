@@ -53,9 +53,9 @@ class BotLogger:
         self.logger = logging.getLogger('FootballBot')
         
         # Подавляем лишние логи от библиотек
-        logging.getLogger('httpx').setLevel(logging.WARNING)
+        logging.getLogger('httpx' ).setLevel(logging.WARNING)
         logging.getLogger('telegram').setLevel(logging.WARNING)
-        logging.getLogger('aiohttp').setLevel(logging.WARNING)
+        logging.getLogger('aiohttp' ).setLevel(logging.WARNING)
         
         self.logger.info("🚀 Система логирования инициализирована")
     
@@ -411,4 +411,3 @@ if __name__ == "__main__":
     print(f"💚 Статистика здоровья: {health_stats}")
     
     print("🎉 Тестирование завершено!")
-
